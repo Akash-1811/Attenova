@@ -1,0 +1,54 @@
+# Git and version control
+.git
+.gitignore
+.gitattributes
+
+# Secrets and local config – never in image
+.env
+.env.*
+!.env.example
+*.pem
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv
+.venv
+env
+.pytest_cache
+.mypy_cache
+*.egg-info
+.eggs
+
+# Django
+*.log
+db.sqlite3
+media
+staticfiles
+local_settings.py
+
+# IDE and OS
+.idea
+.vscode
+.cursor
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Docs and misc (optional – uncomment if you don’t need in image)
+# *.md
+# docs
+
+# Docker
+Dockerfile*
+.dockerignore
+docker-compose*
+compose*
+
+# CI/CD
+.github
+.gitlab-ci.yml

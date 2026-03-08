@@ -1,0 +1,62 @@
+# Attenova – Default DB from .env; Biometric (ESSL) fixed here
+# Usage: docker compose up --build
+# Set in .env: default DB (ATTENOVA_DB_ENGINE, SQLITE_DB_NAME or DEFAULT_DB_*), APP_PORT, etc.
+# ESSL password: set ESSL_DB_PASSWORD in .env (used below)
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ${COMPOSE_APP_CONTAINER_NAME:-attenova-web}
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    env_file:
+      - .env
+    environment:
+      # Default DB: fully from .env (no overrides)
+      # Biometric (ESSL): fixed in compose; password from .env
+      ESSL_DB_NAME: yourdigitallift_biometric
+      ESSL_DB_USER: yourdigitallift_admin
+      ESSL_DB_PASSWORD: ${ESSL_DB_PASSWORD}
+      ESSL_DB_HOST: 68.178.167.233
+      ESSL_DB_PORT: "3306"
+      ESSL_DB_CONN_MAX_AGE: "30"
+      ESSL_DEVICE_LOGS_TABLE: DeviceLogs_2_2026
+      ESSL_SYNC_BATCH_SIZE: "5000"
+      ESSL_SYNC_MAX_BATCHES: "20"
+      # Redis: in Docker always use the redis service (overrides .env)
+      REDIS_URL: redis://redis:6379/0
+      # Gunicorn tuning (override in .env if needed)
+      GUNICORN_WORKERS: ${GUNICORN_WORKERS:-4}
+      GUNICORN_THREADS: ${GUNICORN_THREADS:-2}
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - media_data:/app/media
+      - sqlite_data:/app/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: ${COMPOSE_REDIS_CONTAINER_NAME:-attenova-redis}
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  sqlite_data:
+  media_data:
+  redis_data:
