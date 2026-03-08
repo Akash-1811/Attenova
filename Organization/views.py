@@ -461,7 +461,9 @@ class OfficeView(View):
             return JsonResponse({"error": "Not found"}, status=404)
         if not _user_can_access_office(user, office):
             return JsonResponse({"error": "Not found"}, status=404)
-        if not _is_superadmin(user) and (user.organization_id != office.organization_id or user.role != UserRole.ORG_ADMIN):
+        if not _is_superadmin(user) and (
+            user.organization_id != office.organization_id or user.role != UserRole.ORG_ADMIN
+        ):
             return JsonResponse({"error": "Only SuperAdmin or org admin can delete"}, status=403)
         office.delete()
         return JsonResponse({"message": "Deleted"}, status=200)

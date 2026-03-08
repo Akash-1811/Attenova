@@ -52,9 +52,7 @@ class Employee(models.Model):
     date_of_birth = models.DateField(null=True, blank=True)
     email = models.EmailField(blank=True)
     phone_number = models.CharField(max_length=20, blank=True)
-    government_id_type = models.CharField(
-        max_length=32, choices=GovernmentIdType.choices, blank=True
-    )
+    government_id_type = models.CharField(max_length=32, choices=GovernmentIdType.choices, blank=True)
     government_id_value = models.CharField(max_length=128, blank=True)
     profile_pic = models.ImageField(upload_to="employee_profiles/", blank=True, null=True)
     is_active = models.BooleanField(default=True)
@@ -116,10 +114,6 @@ class Employee(models.Model):
     def clean(self):
         super().clean()
         if self.office_id and self.organization_id and self.office.organization_id != self.organization_id:
-            raise ValidationError(
-                {"office": "Office must belong to the same organization."}
-            )
+            raise ValidationError({"office": "Office must belong to the same organization."})
         if self.shift_id and self.office_id and self.shift.office_id != self.office_id:
-            raise ValidationError(
-                {"shift": "Shift must belong to the same office as the employee."}
-            )
+            raise ValidationError({"shift": "Shift must belong to the same office as the employee."})

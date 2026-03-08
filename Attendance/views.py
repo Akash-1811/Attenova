@@ -49,7 +49,11 @@ def _parse_datetime(value):
 def _get_regularization_queryset(user):
     """Regularizations visible to *user*. Org Admin: all in org. Office Admin/Supervisor: only their office if user.office_id. Manager: only their offices."""
     qs = AttendanceRegularization.objects.select_related(
-        "employee", "employee__office", "attendance", "requested_by", "reviewed_by",
+        "employee",
+        "employee__office",
+        "attendance",
+        "requested_by",
+        "reviewed_by",
     )
     if is_superadmin(user):
         return qs
@@ -121,7 +125,8 @@ class RegularizationView(View):
             )
 
         pending_exists = AttendanceRegularization.objects.filter(
-            attendance=attendance, status=RegularizationStatus.PENDING,
+            attendance=attendance,
+            status=RegularizationStatus.PENDING,
         ).exists()
         if pending_exists:
             return JsonResponse(

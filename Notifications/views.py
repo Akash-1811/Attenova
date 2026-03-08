@@ -1,4 +1,3 @@
-
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views import View
@@ -22,9 +21,7 @@ def _notification_payload(n: Notification) -> dict:
         "created_at": n.created_at.isoformat() if n.created_at else None,
     }
     payload["created_by_id"] = n.created_by_id
-    payload["created_by_name"] = (
-        (n.created_by.name or n.created_by.email) if getattr(n, "created_by", None) else None
-    )
+    payload["created_by_name"] = (n.created_by.name or n.created_by.email) if getattr(n, "created_by", None) else None
     return payload
 
 
@@ -89,7 +86,5 @@ def mark_read(request, pk):
 @require_http_methods(["PATCH"])
 def mark_all_read(request):
     """PATCH /api/notifications/read-all/"""
-    updated = Notification.objects.filter(
-        recipient=request.user, is_read=False
-    ).update(is_read=True)
+    updated = Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
     return JsonResponse({"updated": updated})

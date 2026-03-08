@@ -26,9 +26,7 @@ ROLE_MIN_DESIGNATION_INDEX = {
 
 # Keep same order as DESIGNATION_ORDER for indexing.
 _designation_labels = dict(Designation.choices)
-DESIGNATION_CHOICES_LIST = [
-    {"value": v, "label": _designation_labels.get(v, v)} for v in DESIGNATION_ORDER
-]
+DESIGNATION_CHOICES_LIST = [{"value": v, "label": _designation_labels.get(v, v)} for v in DESIGNATION_ORDER]
 
 # Only these designations can be set when creating an employee (Add Employee / Import).
 ALLOWED_CREATE_DESIGNATIONS = frozenset({"EMPLOYEE", "SUPPORT_STAFF"})

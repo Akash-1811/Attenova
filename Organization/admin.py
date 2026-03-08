@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from Organization.models import Organization, Office
 
+
 class OrganizationAdmin(admin.ModelAdmin):
     list_display = ("name", "address", "city", "state", "country", "phone_number", "email", "pincode", "is_active")
     list_filter = ("is_active",)
@@ -11,7 +12,10 @@ class OrganizationAdmin(admin.ModelAdmin):
     ordering = ("name",)
     readonly_fields = ("created_at", "updated_at")
     fields = ("name", "address", "city", "state", "country", "phone_number", "email", "pincode", "is_active")
+
+
 admin.site.register(Organization, OrganizationAdmin)
+
 
 class OfficeAdmin(admin.ModelAdmin):
     list_display = ("name", "location", "full_address", "num_biometric_devices", "managers_list", "is_active")
@@ -28,4 +32,6 @@ class OfficeAdmin(admin.ModelAdmin):
         return ", ".join(m.name or m.email for m in obj.managers.all()) or "-"
 
     managers_list.short_description = "Managers"
+
+
 admin.site.register(Office, OfficeAdmin)

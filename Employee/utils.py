@@ -209,9 +209,7 @@ def get_employees_queryset(user):
     if is_superadmin(user):
         return Employee.objects.select_related("organization", "office")
     if user.role == UserRole.ORG_ADMIN and user.organization_id:
-        return Employee.objects.filter(
-            organization_id=user.organization_id
-        ).select_related("organization", "office")
+        return Employee.objects.filter(organization_id=user.organization_id).select_related("organization", "office")
     if user.role in (UserRole.OFFICE_ADMIN, UserRole.SUPERVISOR):
         if not getattr(user, "office_id", None) or not user.organization_id:
             return Employee.objects.none()
@@ -220,9 +218,7 @@ def get_employees_queryset(user):
             office_id=user.office_id,
         ).select_related("organization", "office")
     if user.role == UserRole.OFFICE_MANAGER:
-        return Employee.objects.filter(office__managers=user).select_related(
-            "organization", "office"
-        )
+        return Employee.objects.filter(office__managers=user).select_related("organization", "office")
     return Employee.objects.none()
 
 
@@ -232,10 +228,7 @@ def get_employees_queryset(user):
 def normalize_df_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Normalize column names: lowercase, spaces/hyphens to underscore."""
     df = df.copy()
-    df.columns = [
-        str(c).strip().lower().replace(" ", "_").replace("-", "_")
-        for c in df.columns
-    ]
+    df.columns = [str(c).strip().lower().replace(" ", "_").replace("-", "_") for c in df.columns]
     return df
 
 
@@ -282,6 +275,7 @@ def validate_and_prepare_import_row(
     Validate one row and prepare employee data if valid.
     Returns (row_index, employee_dict_or_None, error_message_or_None).
     """
+
     def str_val(key: str) -> str:
         v = row_series.get(key)
         if v is None or (isinstance(v, float) and pd.isna(v)):
@@ -350,9 +344,7 @@ def validate_and_prepare_import_row(
             return (
                 row_index,
                 None,
-                "Row {}: government_id_type must be one of License, PanCard, AadhaarCard, VoterID".format(
-                    row_index
-                ),
+                "Row {}: government_id_type must be one of License, PanCard, AadhaarCard, VoterID".format(row_index),
             )
 
     dob_raw = row_series.get("date_of_birth")

@@ -43,6 +43,7 @@ def require_auth(view_func):
         request.user = get_user_from_request(request)
         if request.user is None:
             from django.http import JsonResponse
+
             return JsonResponse({"error": "Invalid or expired token"}, status=401)
         return view_func(request, *args, **kwargs)
 

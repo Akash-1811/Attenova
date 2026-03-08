@@ -129,9 +129,10 @@ def create_employee_with_login(request):
         return JsonResponse({"error": "email already exists for an employee in this organization"}, status=400)
     if phone_number and Employee.objects.filter(organization_id=org_id, phone_number=phone_number).exists():
         return JsonResponse({"error": "phone_number already exists for an employee in this organization"}, status=400)
-    if government_id_value and Employee.objects.filter(
-        organization_id=org_id, government_id_value=government_id_value
-    ).exists():
+    if (
+        government_id_value
+        and Employee.objects.filter(organization_id=org_id, government_id_value=government_id_value).exists()
+    ):
         return JsonResponse(
             {"error": "government_id_value already exists for an employee in this organization"},
             status=400,
@@ -368,7 +369,12 @@ class EmployeeView(View):
             update_fields.add("date_of_birth")
         if "emp_code" in body:
             ec = (body.get("emp_code") or "").strip()
-            if ec and not Employee.objects.filter(organization_id=emp.organization_id, emp_code=ec).exclude(pk=emp.pk).exists():
+            if (
+                ec
+                and not Employee.objects.filter(organization_id=emp.organization_id, emp_code=ec)
+                .exclude(pk=emp.pk)
+                .exists()
+            ):
                 emp.emp_code = ec
                 update_fields.add("emp_code")
         if "shift_id" in body:
@@ -482,22 +488,28 @@ def check_employee_duplicate(request):
         )
 
     if not agg_kwargs:
-        return JsonResponse({
-            "phone_number_taken": False,
-            "email_taken": False,
-            "government_id_value_taken": False,
-        }, status=200)
+        return JsonResponse(
+            {
+                "phone_number_taken": False,
+                "email_taken": False,
+                "government_id_value_taken": False,
+            },
+            status=200,
+        )
 
     agg = base.aggregate(**agg_kwargs)
     phone_number_taken = (agg.get("phone_taken") or 0) == 1 if phone_number else False
     email_taken = (agg.get("email_taken") or 0) == 1 if email else False
     government_id_value_taken = (agg.get("govt_taken") or 0) == 1 if government_id_value else False
 
-    return JsonResponse({
-        "phone_number_taken": phone_number_taken,
-        "email_taken": email_taken,
-        "government_id_value_taken": government_id_value_taken,
-    }, status=200)
+    return JsonResponse(
+        {
+            "phone_number_taken": phone_number_taken,
+            "email_taken": email_taken,
+            "government_id_value_taken": government_id_value_taken,
+        },
+        status=200,
+    )
 
 
 @require_auth
@@ -510,27 +522,44 @@ def employee_export(request):
 
     rows = []
     for idx, emp in enumerate(employees, start=1):
-        rows.append({
-            "index": idx,
-            "id": emp.id,
-            "emp_code": emp.emp_code,
-            "name": emp.name,
-            "designation": emp.designation or "",
-            "gender": emp.gender or "",
-            "date_of_birth": emp.date_of_birth.isoformat() if emp.date_of_birth else "",
-            "email": emp.email or "",
-            "phone_number": emp.phone_number or "",
-            "government_id_type": emp.government_id_type or "",
-            "government_id_value": emp.government_id_value or "",
-            "office_id": emp.office_id,
-            "organization_id": emp.organization_id,
-            "is_active": emp.is_active,
-        })
+        rows.append(
+            {
+                "index": idx,
+                "id": emp.id,
+                "emp_code": emp.emp_code,
+                "name": emp.name,
+                "designation": emp.designation or "",
+                "gender": emp.gender or "",
+                "date_of_birth": emp.date_of_birth.isoformat() if emp.date_of_birth else "",
+                "email": emp.email or "",
+                "phone_number": emp.phone_number or "",
+                "government_id_type": emp.government_id_type or "",
+                "government_id_value": emp.government_id_value or "",
+                "office_id": emp.office_id,
+                "organization_id": emp.organization_id,
+                "is_active": emp.is_active,
+            }
+        )
     df = pd.DataFrame(rows)
     if df.empty:
-        df = pd.DataFrame(columns=["index", "id", "emp_code", "name", "designation", "gender", "date_of_birth",
-                                   "email", "phone_number", "government_id_type", "government_id_value",
-                                   "office_id", "organization_id", "is_active"])
+        df = pd.DataFrame(
+            columns=[
+                "index",
+                "id",
+                "emp_code",
+                "name",
+                "designation",
+                "gender",
+                "date_of_birth",
+                "email",
+                "phone_number",
+                "government_id_type",
+                "government_id_value",
+                "office_id",
+                "organization_id",
+                "is_active",
+            ]
+        )
 
     buf = io.BytesIO()
     df.to_csv(buf, index=False, encoding="utf-8-sig")
@@ -646,10 +675,7 @@ def employee_import(request):
         return results
 
     all_results = []
-    chunks = [
-        df.iloc[i : i + IMPORT_VALIDATION_CHUNK_SIZE]
-        for i in range(0, len(df), IMPORT_VALIDATION_CHUNK_SIZE)
-    ]
+    chunks = [df.iloc[i : i + IMPORT_VALIDATION_CHUNK_SIZE] for i in range(0, len(df), IMPORT_VALIDATION_CHUNK_SIZE)]
     with ThreadPoolExecutor(max_workers=min(IMPORT_MAX_WORKERS, len(chunks) or 1)) as executor:
         start = 0
         futures = []
@@ -726,19 +752,20 @@ def employee_import(request):
     total_rows = len(df)
     failed_count = len(errors)
     if failed_count > 0:
-        message = (
-            f"{created} out of {total_rows} uploaded, {failed_count} failed because of validation error."
-        )
+        message = f"{created} out of {total_rows} uploaded, {failed_count} failed because of validation error."
     else:
         message = f"{created} out of {total_rows} uploaded."
     if dup_rows_dropped:
         message += f" {dup_rows_dropped} duplicate row(s) removed from file before processing."
 
-    return JsonResponse({
-        "created": created,
-        "skipped_duplicate_rows": dup_rows_dropped,
-        "errors": errors[:100],
-        "total_errors": failed_count,
-        "total_rows": total_rows,
-        "message": message,
-    }, status=200)
+    return JsonResponse(
+        {
+            "created": created,
+            "skipped_duplicate_rows": dup_rows_dropped,
+            "errors": errors[:100],
+            "total_errors": failed_count,
+            "total_rows": total_rows,
+            "message": message,
+        },
+        status=200,
+    )

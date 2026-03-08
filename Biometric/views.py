@@ -140,7 +140,11 @@ class BiometricDeviceView(View):
             new_device_id = (body.get("device_id") or "").strip()
             if not new_device_id:
                 return JsonResponse({"error": "device_id cannot be empty"}, status=400)
-            if BiometricDevice.objects.filter(office_id=device.office_id, device_id=new_device_id).exclude(pk=device.pk).exists():
+            if (
+                BiometricDevice.objects.filter(office_id=device.office_id, device_id=new_device_id)
+                .exclude(pk=device.pk)
+                .exists()
+            ):
                 return JsonResponse(
                     {"error": "A device with this device_id already exists for this office"},
                     status=409,

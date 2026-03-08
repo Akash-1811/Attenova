@@ -30,9 +30,7 @@ def can_regularize_employee(user, employee) -> bool:
         return getattr(user, "office_id", None) == employee.office_id
 
     if user.role == UserRole.OFFICE_MANAGER:
-        return Office.objects.filter(
-            pk=employee.office_id, managers=user
-        ).exists()
+        return Office.objects.filter(pk=employee.office_id, managers=user).exists()
 
     return False
 
@@ -64,9 +62,7 @@ def can_review_regularization(user, regularization) -> bool:
         return getattr(user, "office_id", None) == emp.office_id
 
     if user.role == UserRole.OFFICE_MANAGER:
-        return Office.objects.filter(
-            pk=emp.office_id, managers=user
-        ).exists()
+        return Office.objects.filter(pk=emp.office_id, managers=user).exists()
 
     return False
 
@@ -85,8 +81,7 @@ def get_approvers_for_employee(employee):
     ).values_list("managers__id", flat=True)
 
     return User.objects.filter(
-        Q(pk__in=office_manager_ids)
-        | Q(role__in=[UserRole.ORG_ADMIN, UserRole.OFFICE_ADMIN]),
+        Q(pk__in=office_manager_ids) | Q(role__in=[UserRole.ORG_ADMIN, UserRole.OFFICE_ADMIN]),
         is_active=True,
         organization_id=employee.organization_id,
     )
@@ -129,7 +124,9 @@ def regularization_payload(reg) -> dict:
         "requested_by_id": reg.requested_by_id,
         "requested_by_name": reg.requested_by.name if hasattr(reg, "requested_by") and reg.requested_by else None,
         "reviewed_by_id": reg.reviewed_by_id,
-        "reviewed_by_name": reg.reviewed_by.name if (reg.reviewed_by_id and hasattr(reg, "reviewed_by") and reg.reviewed_by) else None,
+        "reviewed_by_name": reg.reviewed_by.name
+        if (reg.reviewed_by_id and hasattr(reg, "reviewed_by") and reg.reviewed_by)
+        else None,
         "reviewed_at": reg.reviewed_at.isoformat() if reg.reviewed_at else None,
         "review_remarks": reg.review_remarks or "",
         "created_at": reg.created_at.isoformat() if reg.created_at else None,

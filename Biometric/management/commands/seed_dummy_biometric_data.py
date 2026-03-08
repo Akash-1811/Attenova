@@ -66,6 +66,7 @@ class Command(BaseCommand):
         # Device IDs to use (from BiometricDevice or default)
         try:
             from Biometric.models import BiometricDevice
+
             device_ids = list(BiometricDevice.objects.filter(is_active=True).values_list("device_id", flat=True))
         except Exception:
             device_ids = []
@@ -73,9 +74,7 @@ class Command(BaseCommand):
             device_ids = ["3", "9"]
 
         # Base DeviceLogId - start high to avoid collisions
-        max_row = DummyEsslBiometricAttendanceData.objects.aggregate(
-            mx=models.Max("DeviceLogId")
-        )
+        max_row = DummyEsslBiometricAttendanceData.objects.aggregate(mx=models.Max("DeviceLogId"))
         base_log_id = (max_row.get("mx") or 1298800) + 1
 
         # Days in month
@@ -140,4 +139,8 @@ class Command(BaseCommand):
                     log_id += 1
 
         DummyEsslBiometricAttendanceData.objects.bulk_create(records)
-        self.stdout.write(self.style.SUCCESS(f"Created {len(records)} dummy biometric records for {len(employees)} employees, {days} days in {year}-{month:02d}"))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Created {len(records)} dummy biometric records for {len(employees)} employees, {days} days in {year}-{month:02d}"
+            )
+        )
